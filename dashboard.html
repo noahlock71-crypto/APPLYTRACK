@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ApplyTrack – Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --bg-muted: #e5e7eb;
+      --sidebar-bg: #020617;
+      --sidebar-border: #111827;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --primary: #3b82f6;
+      --primary-soft: rgba(59,130,246,0.12);
+      --primary-dark: #2563eb;
+      --border: #e5e7eb;
+      --danger: #ef4444;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --shadow-soft: 0 8px 24px rgba(15,23,42,0.10);
+      --shadow-subtle: 0 2px 8px rgba(15,23,42,0.06);
+      --transition-fast: 0.18s ease-out;
+    }
+    [data-theme="dark"] {
+      --bg: #020617;
+      --bg-muted: #020617;
+      --sidebar-bg: #020617;
+      --sidebar-border: #111827;
+      --card-bg: #020617;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --primary: #3b82f6;
+      --primary-soft: rgba(59,130,246,0.16);
+      --primary-dark: #60a5fa;
+      --border: #1f2937;
+      --danger: #f97373;
+      --shadow-soft: 0 18px 45px rgba(0,0,0,0.55);
+      --shadow-subtle: 0 2px 10px rgba(0,0,0,0.4);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, sans-serif;
+      background: radial-gradient(circle at top left, #e5e7eb 0, var(--bg) 45%, var(--bg) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px minmax(0,1fr);
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        grid-template-columns: 0 minmax(0,1fr);
+      }
+      .sidebar {
+        position: fixed;
+        inset: 0;
+        max-width: 240px;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 40;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15,23,42,0.5);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        z-index: 30;
+      }
+      .sidebar-backdrop.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .topbar-left .menu-toggle {
+        display: inline-flex;
+      }
+    }
+
+    .sidebar-backdrop {
+      display: none;
+    }
+    @media (max-width: 900px) {
+      .sidebar-backdrop {
+        display: block;
+      }
+    }
+
+    .sidebar {
+      background: radial-gradient(circle at top, #020617 0, var(--sidebar-bg) 45%, #020617 100%);
+      border-right: 1px solid var(--sidebar-border);
+      padding: 16px 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e5e7eb;
+    }
+    .logo-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      background: radial-gradient(circle at 20% 0, #3b82f6 0, #1e40af 40%, #0f172a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      box-shadow: 0 8px 22px rgba(37,99,235,0.7);
+    }
+    .logo-text-main {
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      font-size: 15px;
+    }
+    .logo-text-sub {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .sidebar-section-label {
+      margin-top: 12px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      color: #d1d5db;
+      text-decoration: none;
+      font-size: 13px;
+      background: transparent;
+      border: 1px solid transparent;
+      transition: background var(--transition-fast), border-color var(--transition-fast), transform 0.1s ease;
+    }
+    .nav-item a span.icon {
+      font-size: 15px;
+      width: 18px;
+      text-align: center;
+    }
+    .nav-item a:hover {
+      background: rgba(31,41,55,0.92);
+      border-color: rgba(55,65,81,1);
+      transform: translateY(-1px);
+    }
+    .nav-item a.active {
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      border-color: transparent;
+      color: #f9fafb;
+      box-shadow: 0 10px 25px rgba(37,99,235,0.65);
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid rgba(55,65,81,0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .sidebar-pill {
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(55,65,81,0.9);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+    }
+    .sidebar-pill span.badge {
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(34,197,94,0.16);
+      color: #bbf7d0;
+      font-size: 10px;
+    }
+
+    .main-area {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      background: linear-gradient(to right, rgba(248,250,252,0.88), rgba(248,250,252,0.88));
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    [data-theme="dark"] .topbar {
+      background: linear-gradient(to right, rgba(15,23,42,0.9), rgba(15,23,42,0.9));
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .topbar-left h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+    .topbar-left .subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .menu-toggle {
+      display: none;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toggle {
+      font-size: 12px;
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(248,250,252,0.8);
+      font-size: 12px;
+    }
+    [data-theme="dark"] .user-chip {
+      background: rgba(15,23,42,0.9);
+    }
+    .user-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #3b82f6, #22c55e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: white;
+      font-weight: 600;
+    }
+    .logout-btn {
+      font-size: 12px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(248,113,113,0.1);
+      color: var(--danger);
+      cursor: pointer;
+    }
+
+    .page {
+      padding: 18px 24px 32px;
+      max-width: 1120px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+    .page-title-block h2 {
+      margin: 0 0 4px;
+      font-size: 20px;
+    }
+    .page-title-block p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .page-quick-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .meta-pill {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      border: 1px solid rgba(148,163,184,0.4);
+    }
+
+    .grid-main {
+      display: grid;
+      grid-template-columns: minmax(0,1.3fr) minmax(0,1fr);
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 900px) {
+      .grid-main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      padding: 16px 16px 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .card-header h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+    .card-header span {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .card:hover {
+      box-shadow: 0 14px 40px rgba(15,23,42,0.18);
+      transform: translateY(-1px);
+      transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+    }
+
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 4px;
+    }
+    @media (max-width: 900px) {
+      .metrics-row {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+      }
+    }
+    .metric-card {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding: 8px 9px;
+      box-shadow: var(--shadow-subtle);
+      background: radial-gradient(circle at top left, rgba(148,163,184,0.18) 0, var(--card-bg) 45%);
+    }
+    .metric-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .metric-value {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .metric-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .grid-secondary {
+      display: grid;
+      grid-template-columns: minmax(0,1.15fr) minmax(0,0.9fr);
+      gap: 18px;
+    }
+    @media (max-width: 900px) {
+      .grid-secondary {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .today-list {
+      list-style: none;
+      padding: 0;
+      margin: 6px 0 0;
+      font-size: 13px;
+    }
+    .today-list li {
+      padding: 6px 0;
+      border-bottom: 1px dashed rgba(148,163,184,0.4);
+    }
+    .today-list li:last-child {
+      border-bottom: none;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 999px;
+      padding: 2px 6px;
+      font-size: 11px;
+      border: 1px solid rgba(148,163,184,0.7);
+      color: var(--muted);
+    }
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #fbbf24;
+    }
+    .pill-dot.red {
+      background: #f97373;
+    }
+    .hint-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 8px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .hint-list li {
+      margin-bottom: 4px;
+      padding-left: 14px;
+      position: relative;
+    }
+    .hint-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    canvas {
+      width: 100% !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-mark">AT</div>
+          <div>
+            <div class="logo-text-main">ApplyTrack</div>
+            <div class="logo-text-sub">Job search command centre</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-label">Main</div>
+               <ul class="nav-list">
+  <li class="nav-item">
+    <a href="dashboard.html">
+      <span class="icon">📊</span><span>Dashboard</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="applications.html">
+      <span class="icon">📋</span><span>Applications</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="board.html">
+      <span class="icon">🗂</span><span>Board</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="interviews.html">
+      <span class="icon">🎤</span><span>Interviews</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="notes.html">
+      <span class="icon">📝</span><span>All Notes</span>
+    </a>
+  </li>
+</ul>
+      </div>
+
+      <div>
+        <div class="sidebar-section-label">Coming soon</div>
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a href="#" onclick="event.preventDefault();">
+              <span class="icon">🧠</span>
+              <span>AI Coach</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" onclick="event.preventDefault();">
+              <span class="icon">⚙️</span>
+              <span>Settings</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-pill">
+          <span>AI usage</span>
+          <span class="badge">Pro ready</span>
+        </div>
+        <div style="font-size: 11px;">
+          You’re building the pro version of your own career OS. Next step: add plans & billing.
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-area">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menuToggle">☰</button>
+          <div>
+            <h1>Dashboard</h1>
+            <div class="subtitle">Your job search at a glance.</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="toggle" id="themeToggle">🌙 Dark</div>
+          <div class="user-chip" id="userChip">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <span id="userEmail">Loading...</span>
+          </div>
+          <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+      </header>
+
+      <main class="page">
+        <div class="page-header">
+          <div class="page-title-block">
+            <h2>Pipeline overview</h2>
+            <p>Track volume, outcomes, and key follow-ups in one place.</p>
+          </div>
+          <div class="page-quick-meta">
+            <span class="meta-pill" id="metaTotal">Total: –</span>
+            <span class="meta-pill" id="metaActive">Active: –</span>
+            <span class="meta-pill" id="metaOfferRate">Offer rate: –</span>
+          </div>
+        </div>
+
+        <div class="grid-main">
+          <div class="card">
+            <div class="card-header">
+              <h3>Applications per month</h3>
+              <span>Consistency drives opportunity. Watch your volume over time.</span>
+            </div>
+            <canvas id="appsPerMonthChart" height="180"></canvas>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Outcomes & conversion</h3>
+              <span>From applications → interviews → offers.</span>
+            </div>
+            <div class="metrics-row">
+              <div class="metric-card">
+                <div class="metric-label">Total applications</div>
+                <div class="metric-value" id="totalApps">–</div>
+                <div class="metric-sub">All-time</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Interviews</div>
+                <div class="metric-value" id="totalInterviews">–</div>
+                <div class="metric-sub">Marked as “Interview”</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Offers</div>
+                <div class="metric-value" id="totalOffers">–</div>
+                <div class="metric-sub">Marked as “Offer”</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Offer rate</div>
+                <div class="metric-value" id="offerRate">–</div>
+                <div class="metric-sub">Offers / Applications</div>
+              </div>
+            </div>
+            <div style="margin-top:10px;">
+              <canvas id="statusPieChart" height="150"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-secondary">
+          <div class="card">
+            <div class="card-header">
+              <h3>Today & overdue follow-ups</h3>
+              <span>Stay on top of momentum.</span>
+            </div>
+            <ul class="today-list" id="todayList"></ul>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Simple rules that compound</h3>
+              <span>Before AI suggestions, use these defaults.</span>
+            </div>
+            <ul class="hint-list">
+              <li>Follow up 3–5 days after applying if you haven’t heard back.</li>
+              <li>Have a clear “next action” for every active application.</li>
+              <li>Batch applications in focused sprints (e.g. 5–10 per session).</li>
+              <li>Use tags to track patterns: remote, salary band, stack, location.</li>
+              <li>Review outcomes weekly: what’s working, what isn’t, what to adjust.</li>
+            </ul>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabaseUrl = "https://xktmvjnzjeeoxsreggpg.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhrdG12am56amVlb3hzcmVnZ3BnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzOTEzMjMsImV4cCI6MjA4Mzk2NzMyM30.RHfnwflwiZ4KwDNLC_H6WpoekvHWAQeau5m8bTod2IM";
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    let currentUser = null;
+
+    const themeToggle = document.getElementById("themeToggle");
+    const storedTheme = localStorage.getItem("applytrack-theme") || "dark";
+    document.documentElement.setAttribute("data-theme", storedTheme);
+    themeToggle.textContent = storedTheme === "dark" ? "🌙 Dark" : "☀️ Light";
+
+    themeToggle.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("applytrack-theme", next);
+      themeToggle.textContent = next === "dark" ? "🌙 Dark" : "☀️ Light";
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    });
+
+    const sidebar = document.getElementById("sidebar");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+    const menuToggle = document.getElementById("menuToggle");
+
+    if (menuToggle) {
+      menuToggle.addEventListener("click", () => {
+        sidebar.classList.add("open");
+        sidebarBackdrop.classList.add("visible");
+      });
+    }
+    if (sidebarBackdrop) {
+      sidebarBackdrop.addEventListener("click", () => {
+        sidebar.classList.remove("open");
+        sidebarBackdrop.classList.remove("visible");
+      });
+    }
+
+    const totalAppsEl = document.getElementById("totalApps");
+    const totalInterviewsEl = document.getElementById("totalInterviews");
+    const totalOffersEl = document.getElementById("totalOffers");
+    const offerRateEl = document.getElementById("offerRate");
+    const todayListEl = document.getElementById("todayList");
+    const metaTotal = document.getElementById("metaTotal");
+    const metaActive = document.getElementById("metaActive");
+    const metaOfferRate = document.getElementById("metaOfferRate");
+    const userEmailEl = document.getElementById("userEmail");
+    const userAvatarEl = document.getElementById("userAvatar");
+
+    let appsPerMonthChart;
+    let statusPieChart;
+
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        window.location.href = "login.html";
+        return;
+      }
+      currentUser = data.session.user;
+      if (currentUser.email) {
+        userEmailEl.textContent = currentUser.email;
+        const initials = currentUser.email[0]?.toUpperCase() || "U";
+        userAvatarEl.textContent = initials;
+      }
+
+      await buildDashboard();
+    })();
+
+    async function buildDashboard() {
+      const { data, error } = await supabase
+        .from("applications")
+        .select("*")
+        .eq("user_id", currentUser.id);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      const rows = data || [];
+      const totalApps = rows.length;
+      const totalInterviews = rows.filter(d => d.status === "Interview").length;
+      const totalOffers = rows.filter(d => d.status === "Offer").length;
+      const totalActive = rows.filter(d => d.status === "Applied" || d.status === "Interview").length;
+
+      totalAppsEl.textContent = totalApps;
+      totalInterviewsEl.textContent = totalInterviews;
+      totalOffersEl.textContent = totalOffers;
+      offerRateEl.textContent = totalApps ? ((totalOffers / totalApps) * 100).toFixed(1) + "%" : "–";
+
+      metaTotal.textContent = `Total: ${totalApps || 0}`;
+      metaActive.textContent = `Active: ${totalActive || 0}`;
+      metaOfferRate.textContent = `Offer rate: ${totalApps ? ((totalOffers / totalApps) * 100).toFixed(1) + "%" : "–"}`;
+
+      buildAppsPerMonthChart(rows);
+      buildStatusPieChart(rows);
+      buildTodayList(rows);
+    }
+
+    function getCssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function buildAppsPerMonthChart(rows) {
+      const counts = {};
+      rows.forEach(r => {
+        if (!r.applied_date) return;
+        const d = new Date(r.applied_date);
+        if (isNaN(d)) return;
+        const key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+        counts[key] = (counts[key] || 0) + 1;
+      });
+
+      const labels = Object.keys(counts).sort();
+      const values = labels.map(k => counts[k]);
+
+      const ctx = document.getElementById("appsPerMonthChart").getContext("2d");
+      if (appsPerMonthChart) appsPerMonthChart.destroy();
+
+      const axisColor = getCssVar("--muted");
+
+      appsPerMonthChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "Applications",
+            data: values,
+            backgroundColor: "rgba(59,130,246,0.65)",
+            borderRadius: 6,
+            maxBarThickness: 38
+          }]
+        },
+        options: {
+          scales: {
+            x: {
+              ticks: { color: axisColor },
+              grid: { display: false }
+            },
+            y: {
+              ticks: { color: axisColor },
+              grid: { color: "rgba(148,163,184,0.25)" },
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: axisColor }
+            }
+          }
+        }
+      });
+    }
+
+    function buildStatusPieChart(rows) {
+      const statuses = ["Applied", "Interview", "Offer", "Rejected"];
+      const counts = statuses.map(s => rows.filter(r => r.status === s).length);
+
+      const ctx = document.getElementById("statusPieChart").getContext("2d");
+      if (statusPieChart) statusPieChart.destroy();
+
+      const axisColor = getCssVar("--muted");
+
+      statusPieChart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: statuses,
+          datasets: [{
+            data: counts,
+            backgroundColor: [
+              "rgba(59,130,246,0.9)",
+              "rgba(234,179,8,0.9)",
+              "rgba(34,197,94,0.9)",
+              "rgba(248,113,113,0.9)"
+            ],
+            borderWidth: 1,
+            borderColor: "rgba(15,23,42,0.08)"
+          }]
+        },
+        options: {
+          cutout: "55%",
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { color: axisColor, usePointStyle: true, pointStyle: "circle" }
+            }
+          }
+        }
+      });
+    }
+
+    function buildTodayList(rows) {
+      todayListEl.innerHTML = "";
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      const followupsToday = [];
+      const followupsOverdue = [];
+
+      rows.forEach(job => {
+        if (!job.follow_up_date) return;
+        if (job.status === "Offer" || job.status === "Rejected") return;
+
+        const f = new Date(job.follow_up_date);
+        if (isNaN(f)) return;
+        f.setHours(0,0,0,0);
+
+        if (f.getTime() === today.getTime()) {
+          followupsToday.push(job);
+        } else if (f < today) {
+          followupsOverdue.push(job);
+        }
+      });
+
+      if (!followupsToday.length && !followupsOverdue.length) {
+        const li = document.createElement("li");
+        li.textContent = "No follow-ups due today. Nice work.";
+        todayListEl.appendChild(li);
+        return;
+      }
+
+      if (followupsOverdue.length) {
+        const header = document.createElement("li");
+        header.innerHTML = `<span class="pill"><span class="pill-dot red"></span>Overdue</span>`;
+        todayListEl.appendChild(header);
+
+        followupsOverdue.forEach(job => {
+          const d = new Date(job.follow_up_date).toLocaleDateString();
+          const item = document.createElement("li");
+          item.innerHTML = `<strong>${job.company}</strong> – ${job.role} <span style="color:#f97373;">(was due ${d})</span>`;
+          todayListEl.appendChild(item);
+        });
+      }
+
+      if (followupsToday.length) {
+        const header = document.createElement("li");
+        header.innerHTML = `<span class="pill"><span class="pill-dot"></span>Due today</span>`;
+        todayListEl.appendChild(header);
+
+        followupsToday.forEach(job => {
+          const item = document.createElement("li");
+          item.innerHTML = `<strong>${job.company}</strong> – ${job.role}`;
+          todayListEl.appendChild(item);
+        });
+      }
+    }
+  </script>
+</body>
+</html>

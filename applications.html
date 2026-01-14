@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ApplyTrack – Applications</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    /* -----------------------------------------------------------------
+       EXACT CSS FROM DASHBOARD/OTHER PAGES
+    ----------------------------------------------------------------- */
+    :root {
+      --bg: #f3f4f6;
+      --bg-muted: #e5e7eb;
+      --sidebar-bg: #020617;
+      --sidebar-border: #111827;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --primary: #3b82f6;
+      --primary-soft: rgba(59,130,246,0.12);
+      --primary-dark: #2563eb;
+      --border: #e5e7eb;
+      --danger: #ef4444;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --shadow-soft: 0 8px 24px rgba(15,23,42,0.10);
+      --shadow-subtle: 0 2px 8px rgba(15,23,42,0.06);
+      --transition-fast: 0.18s ease-out;
+    }
+    [data-theme="dark"] {
+      --bg: #020617;
+      --bg-muted: #020617;
+      --sidebar-bg: #020617;
+      --sidebar-border: #111827;
+      --card-bg: #020617;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --primary: #3b82f6;
+      --primary-soft: rgba(59,130,246,0.16);
+      --primary-dark: #60a5fa;
+      --border: #1f2937;
+      --danger: #f97373;
+      --shadow-soft: 0 18px 45px rgba(0,0,0,0.55);
+      --shadow-subtle: 0 2px 10px rgba(0,0,0,0.4);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, sans-serif;
+      background: radial-gradient(circle at top left, #e5e7eb 0, var(--bg) 45%, var(--bg) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px minmax(0,1fr);
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        grid-template-columns: 0 minmax(0,1fr);
+      }
+      .sidebar {
+        position: fixed;
+        inset: 0;
+        max-width: 240px;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 40;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15,23,42,0.5);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        z-index: 30;
+      }
+      .sidebar-backdrop.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .topbar-left .menu-toggle {
+        display: inline-flex;
+      }
+    }
+
+    .sidebar-backdrop {
+      display: none;
+    }
+    @media (max-width: 900px) {
+      .sidebar-backdrop {
+        display: block;
+      }
+    }
+
+    .sidebar {
+      background: radial-gradient(circle at top, #020617 0, var(--sidebar-bg) 45%, #020617 100%);
+      border-right: 1px solid var(--sidebar-border);
+      padding: 16px 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e5e7eb;
+    }
+    .logo-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      background: radial-gradient(circle at 20% 0, #3b82f6 0, #1e40af 40%, #0f172a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      box-shadow: 0 8px 22px rgba(37,99,235,0.7);
+    }
+    .logo-text-main {
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      font-size: 15px;
+    }
+    .logo-text-sub {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .sidebar-section-label {
+      margin-top: 12px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      color: #d1d5db;
+      text-decoration: none;
+      font-size: 13px;
+      background: transparent;
+      border: 1px solid transparent;
+      transition: background var(--transition-fast), border-color var(--transition-fast), transform 0.1s ease;
+    }
+    .nav-item a span.icon {
+      font-size: 15px;
+      width: 18px;
+      text-align: center;
+    }
+    .nav-item a:hover {
+      background: rgba(31,41,55,0.92);
+      border-color: rgba(55,65,81,1);
+      transform: translateY(-1px);
+    }
+    .nav-item a.active {
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      border-color: transparent;
+      color: #f9fafb;
+      box-shadow: 0 10px 25px rgba(37,99,235,0.65);
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid rgba(55,65,81,0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .sidebar-pill {
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(55,65,81,0.9);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+    }
+    .sidebar-pill span.badge {
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(59,130,246,0.18);
+      color: #bfdbfe;
+      font-size: 10px;
+    }
+
+    .main-area {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      background: linear-gradient(to right, rgba(248,250,252,0.88), rgba(248,250,252,0.88));
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    [data-theme="dark"] .topbar {
+      background: linear-gradient(to right, rgba(15,23,42,0.9), rgba(15,23,42,0.9));
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .topbar-left h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+    .topbar-left .subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .menu-toggle {
+      display: none;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toggle {
+      font-size: 12px;
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(248,250,252,0.8);
+      font-size: 12px;
+    }
+    [data-theme="dark"] .user-chip {
+      background: rgba(15,23,42,0.9);
+    }
+    .user-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #3b82f6, #22c55e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: white;
+      font-weight: 600;
+    }
+    .logout-btn {
+      font-size: 12px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(248,113,113,0.1);
+      color: var(--danger);
+      cursor: pointer;
+    }
+
+    .page {
+      padding: 18px 24px 32px;
+      max-width: 1120px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .page-title-block h2 {
+      margin: 0 0 4px;
+      font-size: 20px;
+    }
+    .page-title-block p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .page-quick-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .meta-pill {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      border: 1px solid rgba(148,163,184,0.4);
+    }
+
+    .grid-main {
+      display: grid;
+      grid-template-columns: minmax(0,1.1fr) minmax(0,1.4fr);
+      gap: 18px;
+    }
+    @media (max-width: 900px) {
+      .grid-main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      padding: 16px 16px 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+    .card-header h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+    .card-header span {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .card:hover {
+      box-shadow: 0 14px 40px rgba(15,23,42,0.18);
+      transform: translateY(-1px);
+      transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+    }
+
+    label {
+      font-size: 12px;
+      margin-top: 10px;
+      display: block;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 9px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      margin-top: 4px;
+      font-size: 13px;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary-soft);
+    }
+    textarea {
+      resize: vertical;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+    }
+    @media (max-width: 600px) {
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    button.primary {
+      margin-top: 12px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 999px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button.primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .secondary-btn {
+      margin-top: 8px;
+      width: 100%;
+      padding: 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(248,250,252,0.8);
+      color: var(--muted);
+      font-size: 12px;
+      cursor: pointer;
+    }
+    [data-theme="dark"] .secondary-btn {
+      background: rgba(15,23,42,0.9);
+    }
+
+    .muted {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 6px 4px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(148,163,184,0.6);
+    }
+    .status-badge.Applied { background: rgba(59,130,246,0.08); color: #1d4ed8; }
+    .status-badge.Interview { background: rgba(234,179,8,0.12); color: #ca8a04; }
+    .status-badge.Offer { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .status-badge.Rejected { background: rgba(248,113,113,0.12); color: #b91c1c; }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 999px;
+      padding: 2px 5px;
+      font-size: 11px;
+      border: 1px solid rgba(148,163,184,0.7);
+      color: var(--muted);
+    }
+    .chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .actions button {
+      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      margin-right: 4px;
+    }
+    .actions .edit-btn {
+      background: var(--bg-muted);
+      color: #111827;
+    }
+    .actions .delete-btn {
+      background: rgba(248,113,113,0.12);
+      color: #b91c1c;
+    }
+    [data-theme="dark"] .actions .edit-btn {
+      background: #111827;
+      color: #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-mark">AT</div>
+          <div>
+            <div class="logo-text-main">ApplyTrack</div>
+            <div class="logo-text-sub">Job search command centre</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-label">Main</div>
+       <ul class="nav-list">
+  <li class="nav-item">
+    <a href="dashboard.html">
+      <span class="icon">📊</span><span>Dashboard</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="applications.html" class="active">
+      <span class="icon">📋</span><span>Applications</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="board.html">
+      <span class="icon">🗂</span><span>Board</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="interviews.html">
+      <span class="icon">🎤</span><span>Interviews</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="notes.html">
+      <span class="icon">📝</span><span>All Notes</span>
+    </a>
+  </li>
+</ul>
+      </div>
+
+      <div>
+        <div class="sidebar-section-label">Coming soon</div>
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a href="#" onclick="event.preventDefault();">
+              <span class="icon">🧠</span>
+              <span>AI Coach</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" onclick="event.preventDefault();">
+              <span class="icon">⚙️</span>
+              <span>Settings</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-pill">
+          <span>Pipeline</span>
+          <span class="badge">Core view</span>
+        </div>
+        <div style="font-size: 11px;">
+          Applications are the spine. Everything else – interviews, AI, analytics – hangs off this.
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-area">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menuToggle">☰</button>
+          <div>
+            <h1>Applications</h1>
+            <div class="subtitle">Capture every opportunity and keep a clear next move.</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="toggle" id="themeToggle">🌙 Dark</div>
+          <div class="user-chip" id="userChip">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <span id="userEmail">Loading...</span>
+          </div>
+          <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+      </header>
+
+      <main class="page">
+        <div class="page-header">
+          <div class="page-title-block">
+            <h2>Application pipeline</h2>
+            <p>Add roles, track status, and keep follow-ups visible.</p>
+          </div>
+          <div class="page-quick-meta">
+            <span class="meta-pill" id="metaTotal">Total: –</span>
+            <span class="meta-pill" id="metaActive">Active: –</span>
+            <span class="meta-pill" id="metaInterviews">Interviewing: –</span>
+          </div>
+        </div>
+
+        <div class="grid-main">
+          <div class="card">
+            <div class="card-header">
+              <h3>Add / edit application</h3>
+              <span>Capture the essentials and define your next action.</span>
+            </div>
+
+            <input type="hidden" id="editingId">
+
+            <label>Company</label>
+            <input type="text" id="company" placeholder="e.g. Stripe">
+
+            <label>Role</label>
+            <input type="text" id="role" placeholder="e.g. Product Analyst">
+
+            <div class="field-row">
+              <div>
+                <label>Status</label>
+                <select id="status">
+                  <option value="To Apply">To Apply</option>
+                  <option value="Applied">Applied</option>
+                  <option value="Interview">Interview</option>
+                  <option value="Offer">Offer</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+              <div>
+                <label>Applied date</label>
+                <input type="date" id="applied_date">
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div>
+                <label>Next action</label>
+                <input type="text" id="next_action" placeholder="e.g. Follow up with recruiter, prepare case study">
+              </div>
+              <div>
+                <label>Follow-up date</label>
+                <input type="date" id="follow_up_date">
+              </div>
+            </div>
+
+            <label>Location</label>
+            <input type="text" id="location" placeholder="e.g. London / Remote">
+
+            <label>Source</label>
+            <input type="text" id="source" placeholder="e.g. LinkedIn, company site, referral">
+
+            <label>Notes</label>
+            <textarea id="notes" rows="4" placeholder="Context, why you're excited, who you spoke to, any links or extra details."></textarea>
+
+            <button class="primary" id="saveBtn">Save application</button>
+            <button class="secondary-btn" id="clearBtn" type="button">Clear form</button>
+            <div class="muted" id="formMessage"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Applications</h3>
+              <span>Your pipeline at a glance.</span>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Next action</th>
+                  <th>Follow-up</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="applicationsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabaseUrl = "https://xktmvjnzjeeoxsreggpg.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhrdG12am56amVlb3hzcmVnZ3BnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzOTEzMjMsImV4cCI6MjA4Mzk2NzMyM30.RHfnwflwiZ4KwDNLC_H6WpoekvHWAQeau5m8bTod2IM";
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    let currentUser = null;
+    let applications = [];
+
+    // --- UI & Theme Logic ---
+    const themeToggle = document.getElementById("themeToggle");
+    const storedTheme = localStorage.getItem("applytrack-theme") || "dark";
+    document.documentElement.setAttribute("data-theme", storedTheme);
+    themeToggle.textContent = storedTheme === "dark" ? "🌙 Dark" : "☀️ Light";
+
+    themeToggle.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("applytrack-theme", next);
+      themeToggle.textContent = next === "dark" ? "🌙 Dark" : "☀️ Light";
+    });
+
+    const sidebar = document.getElementById("sidebar");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+    const menuToggle = document.getElementById("menuToggle");
+
+    if (menuToggle) {
+      menuToggle.addEventListener("click", () => {
+        sidebar.classList.add("open");
+        sidebarBackdrop.classList.add("visible");
+      });
+    }
+    if (sidebarBackdrop) {
+      sidebarBackdrop.addEventListener("click", () => {
+        sidebar.classList.remove("open");
+        sidebarBackdrop.classList.remove("visible");
+      });
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    });
+
+    const userEmailEl = document.getElementById("userEmail");
+    const userAvatarEl = document.getElementById("userAvatar");
+
+    // --- Form Elements ---
+    const companyInput = document.getElementById("company");
+    const roleInput = document.getElementById("role");
+    const statusInput = document.getElementById("status");
+    const appliedDateInput = document.getElementById("applied_date");
+    const nextActionInput = document.getElementById("next_action");
+    const followUpDateInput = document.getElementById("follow_up_date");
+    const locationInput = document.getElementById("location");
+    const sourceInput = document.getElementById("source");
+    const notesInput = document.getElementById("notes");
+    const saveBtn = document.getElementById("saveBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const formMessage = document.getElementById("formMessage");
+    const editingIdInput = document.getElementById("editingId");
+    const applicationsTable = document.getElementById("applicationsTable");
+
+    const metaTotal = document.getElementById("metaTotal");
+    const metaActive = document.getElementById("metaActive");
+    const metaInterviews = document.getElementById("metaInterviews");
+
+    function showFormMessage(text, isError = false) {
+      formMessage.textContent = text;
+      formMessage.style.color = isError ? "#ef4444" : "var(--muted)";
+    }
+
+    // --- Initialization ---
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        window.location.href = "login.html";
+        return;
+      }
+      currentUser = data.session.user;
+      if (currentUser.email) {
+        userEmailEl.textContent = currentUser.email;
+        const initials = currentUser.email[0]?.toUpperCase() || "U";
+        userAvatarEl.textContent = initials;
+      }
+
+      await loadApplications();
+    })();
+
+    async function loadApplications() {
+      const { data, error } = await supabase
+        .from("applications")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+      applications = data || [];
+      renderApplications();
+      updateMeta();
+    }
+
+    function updateMeta() {
+      const total = applications.length;
+      const active = applications.filter(a => a.status === "Applied" || a.status === "Interview").length;
+      const interviewing = applications.filter(a => a.status === "Interview").length;
+
+      metaTotal.textContent = `Total: ${total}`;
+      metaActive.textContent = `Active: ${active}`;
+      metaInterviews.textContent = `Interviewing: ${interviewing}`;
+    }
+
+    function renderApplications() {
+      applicationsTable.innerHTML = "";
+
+      if (!applications.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 6;
+        td.textContent = "No applications yet. Add your first one on the left.";
+        td.style.color = "var(--muted)";
+        tr.appendChild(td);
+        applicationsTable.appendChild(tr);
+        return;
+      }
+
+      applications.forEach(app => {
+        const tr = document.createElement("tr");
+
+        const companyTd = document.createElement("td");
+        companyTd.textContent = app.company || "";
+
+        const roleTd = document.createElement("td");
+        roleTd.textContent = app.role || "";
+
+        const statusTd = document.createElement("td");
+        const badge = document.createElement("span");
+        // Fix space in status class name for CSS
+        badge.className = "status-badge " + (app.status ? app.status.replace(" ", "") : "");
+        badge.textContent = app.status || "Unknown";
+        statusTd.appendChild(badge);
+
+        const nextActionTd = document.createElement("td");
+        if (app.next_action) {
+          const chip = document.createElement("span");
+          chip.className = "chip";
+          chip.innerHTML = `<span class="chip-dot"></span>${app.next_action}`;
+          nextActionTd.appendChild(chip);
+        } else {
+          nextActionTd.textContent = "";
+        }
+
+        const followUpTd = document.createElement("td");
+        if (app.follow_up_date) {
+          const d = new Date(app.follow_up_date);
+          if (!isNaN(d)) {
+            followUpTd.textContent = d.toLocaleDateString();
+          } else {
+            followUpTd.textContent = app.follow_up_date;
+          }
+        } else {
+          followUpTd.textContent = "";
+        }
+
+        // Removed Notes TD from table view for performance
+
+        const actionsTd = document.createElement("td");
+        actionsTd.className = "actions";
+        const editBtn = document.createElement("button");
+        editBtn.className = "edit-btn";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => startEdit(app.id));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-btn";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", () => deleteApplication(app.id));
+
+        actionsTd.appendChild(editBtn);
+        actionsTd.appendChild(deleteBtn);
+
+        tr.appendChild(companyTd);
+        tr.appendChild(roleTd);
+        tr.appendChild(statusTd);
+        tr.appendChild(nextActionTd);
+        tr.appendChild(followUpTd);
+        tr.appendChild(actionsTd);
+
+        applicationsTable.appendChild(tr);
+      });
+    }
+
+    // --- MAIN SAVE LOGIC (FIXED) ---
+    saveBtn.addEventListener("click", async () => {
+      if (!currentUser) return;
+
+      const company = companyInput.value.trim();
+      const role = roleInput.value.trim();
+      const noteText = notesInput.value.trim();
+
+      if (!company || !role) {
+        showFormMessage("Company and role are required.", true);
+        return;
+      }
+
+      showFormMessage("Saving...");
+
+      // 1. Prepare Application Payload (NO NOTES HERE)
+      const appPayload = {
+        user_id: currentUser.id,
+        company,
+        role,
+        status: statusInput.value,
+        applied_date: appliedDateInput.value || null,
+        next_action: nextActionInput.value.trim() || null,
+        follow_up_date: followUpDateInput.value || null,
+        location: locationInput.value.trim() || null,
+        source: sourceInput.value.trim() || null
+      };
+
+      const id = editingIdInput.value;
+      let appResult;
+
+      // 2. Insert or Update Application Table
+      if (id) {
+        appResult = await supabase.from("applications").update(appPayload).eq("id", id).select().single();
+      } else {
+        appResult = await supabase.from("applications").insert([appPayload]).select().single();
+      }
+
+      if (appResult.error) {
+        console.error(appResult.error);
+        showFormMessage("Error saving application details: " + appResult.error.message, true);
+        return;
+      }
+
+      const savedAppId = appResult.data.id;
+
+      // 3. Save Notes to separate table (if notes exist)
+      if (noteText) {
+        // Check if a note row already exists for this application
+        const { data: existingNote, error: fetchError } = await supabase
+          .from("application_notes")
+          .select("id")
+          .eq("application_id", savedAppId)
+          .maybeSingle();
+
+        if (fetchError) {
+           console.error("Error checking notes:", fetchError);
+           // Don't block success message, just log error
+        } else if (existingNote) {
+          // Update existing note
+          await supabase.from("application_notes")
+            .update({ notes: noteText, updated_at: new Date().toISOString() })
+            .eq("id", existingNote.id);
+        } else {
+          // Insert new note
+          await supabase.from("application_notes")
+            .insert([{ 
+              user_id: currentUser.id, 
+              application_id: savedAppId, 
+              notes: noteText 
+            }]);
+        }
+      }
+
+      showFormMessage("Saved successfully.");
+      clearForm();
+      await loadApplications();
+    });
+
+    clearBtn.addEventListener("click", () => {
+      clearForm();
+      showFormMessage("");
+    });
+
+    function clearForm() {
+      editingIdInput.value = "";
+      companyInput.value = "";
+      roleInput.value = "";
+      statusInput.value = "To Apply";
+      appliedDateInput.value = "";
+      nextActionInput.value = "";
+      followUpDateInput.value = "";
+      locationInput.value = "";
+      sourceInput.value = "";
+      notesInput.value = "";
+      saveBtn.textContent = "Save application";
+    }
+
+    async function startEdit(id) {
+      const app = applications.find(a => a.id === id);
+      if (!app) return;
+
+      editingIdInput.value = app.id;
+      companyInput.value = app.company || "";
+      roleInput.value = app.role || "";
+      statusInput.value = app.status || "To Apply";
+      appliedDateInput.value = app.applied_date || "";
+      nextActionInput.value = app.next_action || "";
+      followUpDateInput.value = app.follow_up_date || "";
+      locationInput.value = app.location || "";
+      sourceInput.value = app.source || "";
+      
+      // Fetch notes from the separate table
+      notesInput.value = "Loading notes...";
+      const { data: noteData } = await supabase
+        .from("application_notes")
+        .select("notes")
+        .eq("application_id", id)
+        .maybeSingle();
+        
+      notesInput.value = noteData ? noteData.notes : "";
+      saveBtn.textContent = "Update application";
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function deleteApplication(id) {
+      const sure = confirm("Delete this application?");
+      if (!sure) return;
+
+      // Assuming cascading delete is set up in Supabase. 
+      // If not, we would need to delete from application_notes first.
+      const { error } = await supabase
+        .from("applications")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.error(error);
+        showFormMessage("Error deleting application.", true);
+      } else {
+        await loadApplications();
+      }
+    }
+  </script>
+</body>
+</html>

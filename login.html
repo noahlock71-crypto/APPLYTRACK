@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ApplyTrack – Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #020617;
+      border-radius: 16px;
+      padding: 30px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 10px 40px rgba(15,23,42,0.6);
+      border: 1px solid #1f2937;
+    }
+    h1 {
+      margin-top: 0;
+      text-align: center;
+      font-size: 26px;
+    }
+    p.subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: #9ca3af;
+      margin-bottom: 24px;
+    }
+    label {
+      font-size: 14px;
+      margin-top: 12px;
+      display: block;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #e5e7eb;
+    }
+    input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px #3b82f6;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 16px;
+      border-radius: 8px;
+      border: none;
+      background: #3b82f6;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button.secondary {
+      background: #111827;
+      border: 1px solid #374151;
+      margin-top: 8px;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    button.secondary:hover {
+      background: #1f2937;
+    }
+    .message {
+      margin-top: 12px;
+      font-size: 13px;
+      text-align: center;
+      min-height: 18px;
+    }
+    .top-right-link {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .top-right-link a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>ApplyTrack</h1>
+    <p class="subtitle">Track your job applications in one place.</p>
+
+    <label>Email</label>
+    <input id="email" type="email" placeholder="you@example.com" required>
+
+    <label>Password</label>
+    <input id="password" type="password" placeholder="••••••••" required>
+
+    <button id="loginBtn">Log in</button>
+    <button id="signupBtn" class="secondary">Sign up</button>
+
+    <div class="message" id="message"></div>
+  </div>
+
+  <div class="top-right-link">
+    After login you’ll go to <a href="applications.html">Applications</a>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabaseUrl = "https://xktmvjnzjeeoxsreggpg.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhrdG12am56amVlb3hzcmVnZ3BnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzOTEzMjMsImV4cCI6MjA4Mzk2NzMyM30.RHfnwflwiZ4KwDNLC_H6WpoekvHWAQeau5m8bTod2IM";
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const signupBtn = document.getElementById("signupBtn");
+    const message = document.getElementById("message");
+
+    function showMessage(text, isError = false) {
+      message.textContent = text;
+      message.style.color = isError ? "#f87171" : "#a5b4fc";
+    }
+
+    loginBtn.addEventListener("click", async () => {
+      showMessage("Logging in...");
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailInput.value,
+        password: passwordInput.value
+      });
+      if (error) {
+        showMessage(error.message, true);
+      } else {
+        showMessage("Logged in! Redirecting...");
+        window.location.href = "applications.html";
+      }
+    });
+
+    signupBtn.addEventListener("click", async () => {
+      showMessage("Signing up...");
+      const { data, error } = await supabase.auth.signUp({
+        email: emailInput.value,
+        password: passwordInput.value
+      });
+      if (error) {
+        showMessage(error.message, true);
+      } else {
+        showMessage("Signed up! If confirmations are enabled, check your email.");
+      }
+    });
+
+    // If already logged in, redirect
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        window.location.href = "applications.html";
+      }
+    })();
+  </script>
+</body>
+</html>

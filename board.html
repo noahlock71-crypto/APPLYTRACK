@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ApplyTrack – Board</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --bg-muted: #e5e7eb;
+      --sidebar-bg: #020617;
+      --sidebar-border: #111827;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --primary: #3b82f6;
+      --primary-soft: rgba(59,130,246,0.12);
+      --primary-dark: #2563eb;
+      --border: #e5e7eb;
+      --danger: #ef4444;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --shadow-soft: 0 8px 24px rgba(15,23,42,0.10);
+      --shadow-subtle: 0 2px 8px rgba(15,23,42,0.06);
+      --transition-fast: 0.18s ease-out;
+      --kanban-col-bg: rgba(248,250,252,0.8);
+    }
+    [data-theme="dark"] {
+      --bg: #020617;
+      --bg-muted: #020617;
+      --sidebar-bg: #020617;
+      --sidebar-border: #111827;
+      --card-bg: #020617;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --primary: #3b82f6;
+      --primary-soft: rgba(59,130,246,0.16);
+      --primary-dark: #60a5fa;
+      --border: #1f2937;
+      --danger: #f97373;
+      --shadow-soft: 0 18px 45px rgba(0,0,0,0.55);
+      --shadow-subtle: 0 2px 10px rgba(0,0,0,0.4);
+      --kanban-col-bg: rgba(15,23,42,0.95);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, sans-serif;
+      background: radial-gradient(circle at top left, #e5e7eb 0, var(--bg) 45%, var(--bg) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px minmax(0,1fr);
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        grid-template-columns: 0 minmax(0,1fr);
+      }
+      .sidebar {
+        position: fixed;
+        inset: 0;
+        max-width: 240px;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 40;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15,23,42,0.5);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        z-index: 30;
+      }
+      .sidebar-backdrop.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .topbar-left .menu-toggle {
+        display: inline-flex;
+      }
+    }
+
+    .sidebar-backdrop {
+      display: none;
+    }
+    @media (max-width: 900px) {
+      .sidebar-backdrop {
+        display: block;
+      }
+    }
+
+    .sidebar {
+      background: radial-gradient(circle at top, #020617 0, var(--sidebar-bg) 45%, #020617 100%);
+      border-right: 1px solid var(--sidebar-border);
+      padding: 16px 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e5e7eb;
+    }
+    .logo-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      background: radial-gradient(circle at 20% 0, #3b82f6 0, #1e40af 40%, #0f172a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      box-shadow: 0 8px 22px rgba(37,99,235,0.7);
+    }
+    .logo-text-main {
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      font-size: 15px;
+    }
+    .logo-text-sub {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .sidebar-section-label {
+      margin-top: 12px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      color: #d1d5db;
+      text-decoration: none;
+      font-size: 13px;
+      background: transparent;
+      border: 1px solid transparent;
+      transition: background var(--transition-fast), border-color var(--transition-fast), transform 0.1s ease;
+    }
+    .nav-item a span.icon {
+      font-size: 15px;
+      width: 18px;
+      text-align: center;
+    }
+    .nav-item a:hover {
+      background: rgba(31,41,55,0.92);
+      border-color: rgba(55,65,81,1);
+      transform: translateY(-1px);
+    }
+    .nav-item a.active {
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      border-color: transparent;
+      color: #f9fafb;
+      box-shadow: 0 10px 25px rgba(37,99,235,0.65);
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid rgba(55,65,81,0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .sidebar-pill {
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(55,65,81,0.9);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+    }
+    .sidebar-pill span.badge {
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(249,115,22,0.2);
+      color: #fed7aa;
+      font-size: 10px;
+    }
+
+    .main-area {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      background: linear-gradient(to right, rgba(248,250,252,0.88), rgba(248,250,252,0.88));
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    [data-theme="dark"] .topbar {
+      background: linear-gradient(to right, rgba(15,23,42,0.9), rgba(15,23,42,0.9));
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .topbar-left h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+    .topbar-left .subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .menu-toggle {
+      display: none;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toggle {
+      font-size: 12px;
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(248,250,252,0.8);
+      font-size: 12px;
+    }
+    [data-theme="dark"] .user-chip {
+      background: rgba(15,23,42,0.9);
+    }
+    .user-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #3b82f6, #22c55e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: white;
+      font-weight: 600;
+    }
+    .logout-btn {
+      font-size: 12px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(248,113,113,0.1);
+      color: var(--danger);
+      cursor: pointer;
+    }
+
+    .page {
+      padding: 18px 24px 24px;
+      max-width: 1120px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .page-title-block h2 {
+      margin: 0 0 4px;
+      font-size: 20px;
+    }
+    .page-title-block p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .page-quick-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .meta-pill {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      border: 1px solid rgba(148,163,184,0.4);
+    }
+
+    .board-wrapper {
+      position: relative;
+      margin-top: 4px;
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 12px;
+      align-items: flex-start;
+      flex: 1;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    @media (max-width: 1100px) {
+      .kanban {
+        grid-template-columns: repeat(5, minmax(220px, 1fr));
+      }
+    }
+
+    .kanban-column {
+      background: var(--kanban-col-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 10px;
+      box-shadow: var(--shadow-subtle);
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+    .kanban-column-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+    .kanban-column-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .kanban-column-count {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(148,163,184,0.2);
+      color: var(--muted);
+    }
+    .kanban-column-dropzone {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 4px 0 2px;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .kanban-column-dropzone.highlight {
+      background: rgba(59,130,246,0.12);
+      border-radius: var(--radius-md);
+      box-shadow: 0 0 0 1px rgba(59,130,246,0.4);
+    }
+
+    .kanban-card {
+      border-radius: var(--radius-md);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 8px 8px 6px;
+      box-shadow: var(--shadow-subtle);
+      cursor: grab;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+    }
+    .kanban-card.dragging {
+      opacity: 0.85;
+      transform: rotate(1deg) scale(1.02);
+      box-shadow: 0 14px 40px rgba(15,23,42,0.35);
+      cursor: grabbing;
+    }
+    .kanban-card-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: center;
+    }
+    .kanban-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .kanban-card-role {
+      font-size: 12px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .kanban-card-tags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+    .tag-pill {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.7);
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+    .tag-dot.warn {
+      background: #eab308;
+    }
+    .tag-dot.danger {
+      background: #f97373;
+    }
+    .tag-dot.none {
+      background: #9ca3af;
+    }
+
+    .kanban-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .kanban-card-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .icon-btn {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(248,250,252,0.8);
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0;
+    }
+    [data-theme="dark"] .icon-btn {
+      background: rgba(15,23,42,0.9);
+    }
+    .icon-btn:hover {
+      border-color: var(--primary);
+    }
+
+    .priority {
+      border-color: rgba(250,204,21,0.9);
+      box-shadow: 0 0 0 1px rgba(250,204,21,0.6), 0 8px 24px rgba(250,204,21,0.3);
+    }
+    .priority-badge {
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 999px;
+      background: rgba(250,204,21,0.16);
+      color: #ca8a04;
+      border: 1px solid rgba(234,179,8,0.8);
+    }
+
+    .board-right-panel {
+      width: 0;
+      max-width: 360px;
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      margin-left: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateX(10px);
+      transition: width 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+    }
+    .board-right-panel.open {
+      width: 320px;
+      opacity: 1;
+      transform: translateX(0);
+    }
+    @media (max-width: 1100px) {
+      .board-right-panel {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        top: 70px;
+        z-index: 20;
+      }
+      .board-right-panel.open {
+        width: min(360px, 90vw);
+      }
+    }
+
+    .panel-header {
+      padding: 10px 12px 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .panel-close {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .panel-body {
+      padding: 10px 12px 10px;
+      overflow-y: auto;
+      flex: 1;
+      font-size: 12px;
+    }
+    .panel-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 6px 0 4px;
+    }
+    .panel-field-label {
+      font-size: 11px;
+      margin-top: 8px;
+      display: block;
+    }
+    .panel-body input,
+    .panel-body select,
+    .panel-body textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+    .panel-body textarea {
+      resize: vertical;
+    }
+    .panel-body input:focus,
+    .panel-body select:focus,
+    .panel-body textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary-soft);
+    }
+
+    .panel-footer {
+      padding: 8px 12px 10px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .panel-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .panel-actions button {
+      flex: 1;
+      border-radius: 999px;
+      border: none;
+      padding: 7px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .panel-save {
+      background: var(--primary);
+      color: white;
+    }
+    .panel-delete {
+      background: rgba(248,113,113,0.12);
+      color: #b91c1c;
+    }
+    .panel-meta {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .panel-status-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+    .panel-status-pill {
+      font-size: 11px;
+      padding: 4px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .panel-status-pill.active {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      color: var(--primary-dark);
+    }
+
+    .badge-small {
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 999px;
+      background: rgba(148,163,184,0.18);
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-mark">AT</div>
+          <div>
+            <div class="logo-text-main">ApplyTrack</div>
+            <div class="logo-text-sub">Job search command centre</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-label">Main</div>
+               <ul class="nav-list">
+  <li class="nav-item">
+    <a href="dashboard.html">
+      <span class="icon">📊</span><span>Dashboard</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="applications.html">
+      <span class="icon">📋</span><span>Applications</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="board.html">
+      <span class="icon">🗂</span><span>Board</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="interviews.html">
+      <span class="icon">🎤</span><span>Interviews</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="notes.html">
+      <span class="icon">📝</span><span>All Notes</span>
+    </a>
+  </li>
+</ul>
+      </div>
+
+      <div>
+        <div class="sidebar-section-label">Coming soon</div>
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a href="#" onclick="event.preventDefault();">
+              <span class="icon">🧠</span>
+              <span>AI Coach</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" onclick="event.preventDefault();">
+              <span class="icon">⚙️</span>
+              <span>Settings</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-pill">
+          <span>Board</span>
+          <span class="badge">Flow view</span>
+        </div>
+        <div style="font-size: 11px;">
+          Move cards from idea → offer. Drag-and-drop to keep momentum visible.
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-area">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menuToggle">☰</button>
+          <div>
+            <h1>Board</h1>
+            <div class="subtitle">Visualise your pipeline from “to apply” to offers.</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="toggle" id="themeToggle">🌙 Dark</div>
+          <div class="user-chip" id="userChip">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <span id="userEmail">Loading...</span>
+          </div>
+          <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+      </header>
+
+      <main class="page">
+        <div class="page-header">
+          <div class="page-title-block">
+            <h2>Pipeline board</h2>
+            <p>Drag cards between stages. Click a card to edit details on the right.</p>
+          </div>
+          <div class="page-quick-meta">
+            <span class="meta-pill" id="metaTotal">Total: –</span>
+            <span class="meta-pill" id="metaActive">Active: –</span>
+            <span class="meta-pill" id="metaPriority">Priority: –</span>
+          </div>
+        </div>
+
+        <div class="board-wrapper">
+          <section class="kanban" id="kanban">
+            <div class="kanban-column" data-status="To Apply">
+              <div class="kanban-column-header">
+                <div class="kanban-column-title">To Apply</div>
+                <div class="kanban-column-count" id="count-to-apply">0</div>
+              </div>
+              <div class="kanban-column-dropzone" data-status="To Apply"></div>
+            </div>
+
+            <div class="kanban-column" data-status="Applied">
+              <div class="kanban-column-header">
+                <div class="kanban-column-title">Applied</div>
+                <div class="kanban-column-count" id="count-applied">0</div>
+              </div>
+              <div class="kanban-column-dropzone" data-status="Applied"></div>
+            </div>
+
+            <div class="kanban-column" data-status="Interview">
+              <div class="kanban-column-header">
+                <div class="kanban-column-title">Interview</div>
+                <div class="kanban-column-count" id="count-interview">0</div>
+              </div>
+              <div class="kanban-column-dropzone" data-status="Interview"></div>
+            </div>
+
+            <div class="kanban-column" data-status="Offer">
+              <div class="kanban-column-header">
+                <div class="kanban-column-title">Offer</div>
+                <div class="kanban-column-count" id="count-offer">0</div>
+              </div>
+              <div class="kanban-column-dropzone" data-status="Offer"></div>
+            </div>
+
+            <div class="kanban-column" data-status="Rejected">
+              <div class="kanban-column-header">
+                <div class="kanban-column-title">Rejected</div>
+                <div class="kanban-column-count" id="count-rejected">0</div>
+              </div>
+              <div class="kanban-column-dropzone" data-status="Rejected"></div>
+            </div>
+          </section>
+
+          <aside class="board-right-panel" id="detailPanel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title" id="panelTitle">Application details</div>
+                <div class="panel-subtitle" id="panelSubtitle"></div>
+              </div>
+              <button class="panel-close" id="panelCloseBtn">✕</button>
+            </div>
+            <div class="panel-body">
+              <div class="panel-section-title">Core</div>
+              <label class="panel-field-label">Company</label>
+              <input id="panelCompany">
+
+              <label class="panel-field-label">Role</label>
+              <input id="panelRole">
+
+              <label class="panel-field-label">Status</label>
+              <div class="panel-status-row" id="panelStatusRow">
+                <div class="panel-status-pill" data-status="To Apply">To Apply</div>
+                <div class="panel-status-pill" data-status="Applied">Applied</div>
+                <div class="panel-status-pill" data-status="Interview">Interview</div>
+                <div class="panel-status-pill" data-status="Offer">Offer</div>
+                <div class="panel-status-pill" data-status="Rejected">Rejected</div>
+              </div>
+
+              <label class="panel-field-label">Applied date</label>
+              <input type="date" id="panelAppliedDate">
+
+              <div class="panel-section-title">Next steps</div>
+              <label class="panel-field-label">Next action</label>
+              <input id="panelNextAction" placeholder="e.g. Follow up, prepare case, email recruiter">
+
+              <label class="panel-field-label">Follow-up date</label>
+              <input type="date" id="panelFollowUpDate">
+
+              <div style="margin-top:6px;">
+                <span class="badge-small" id="panelFollowUpBadge">No follow-up set</span>
+              </div>
+
+              <div class="panel-section-title">Notes</div>
+              <textarea id="panelNotes" rows="5" placeholder="Context, who you spoke to, interview notes, links, etc."></textarea>
+
+              <div class="panel-section-title">Priority</div>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin-top:4px;cursor:pointer;">
+                <input type="checkbox" id="panelPriority" style="width:14px;height:14px;">
+                <span>Mark as priority (⭐ floats to top of column)</span>
+              </label>
+            </div>
+            <div class="panel-footer">
+              <div class="panel-actions">
+                <button class="panel-save" id="panelSaveBtn">Save</button>
+                <button class="panel-delete" id="panelDeleteBtn">Delete</button>
+              </div>
+              <div class="panel-meta" id="panelMeta"></div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </div>
+
+   <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabaseUrl = "https://xktmvjnzjeeoxsreggpg.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhrdG12am56amVlb3hzcmVnZ3BnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzOTEzMjMsImV4cCI6MjA4Mzk2NzMyM30.RHfnwflwiZ4KwDNLC_H6WpoekvHWAQeau5m8bTod2IM";
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    let currentUser = null;
+    let applications = [];
+    let currentCard = null; // currently selected app for panel
+
+    // Theme + layout
+    const themeToggle = document.getElementById("themeToggle");
+    const storedTheme = localStorage.getItem("applytrack-theme") || "dark";
+    document.documentElement.setAttribute("data-theme", storedTheme);
+    themeToggle.textContent = storedTheme === "dark" ? "🌙 Dark" : "☀️ Light";
+
+    themeToggle.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("applytrack-theme", next);
+      themeToggle.textContent = next === "dark" ? "🌙 Dark" : "☀️ Light";
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    });
+
+    const sidebar = document.getElementById("sidebar");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+    const menuToggle = document.getElementById("menuToggle");
+
+    if (menuToggle) {
+      menuToggle.addEventListener("click", () => {
+        sidebar.classList.add("open");
+        sidebarBackdrop.classList.add("visible");
+      });
+    }
+    if (sidebarBackdrop) {
+      sidebarBackdrop.addEventListener("click", () => {
+        sidebar.classList.remove("open");
+        sidebarBackdrop.classList.remove("visible");
+      });
+    }
+
+    const userEmailEl = document.getElementById("userEmail");
+    const userAvatarEl = document.getElementById("userAvatar");
+
+    // Meta counters
+    const metaTotal = document.getElementById("metaTotal");
+    const metaActive = document.getElementById("metaActive");
+    const metaPriority = document.getElementById("metaPriority");
+
+    const countToApply = document.getElementById("count-to-apply");
+    const countApplied = document.getElementById("count-applied");
+    const countInterview = document.getElementById("count-interview");
+    const countOffer = document.getElementById("count-offer");
+    const countRejected = document.getElementById("count-rejected");
+
+    // Panel elements
+    const detailPanel = document.getElementById("detailPanel");
+    const panelTitle = document.getElementById("panelTitle");
+    const panelSubtitle = document.getElementById("panelSubtitle");
+    const panelCloseBtn = document.getElementById("panelCloseBtn");
+
+    const panelCompany = document.getElementById("panelCompany");
+    const panelRole = document.getElementById("panelRole");
+    const panelAppliedDate = document.getElementById("panelAppliedDate");
+    const panelNextAction = document.getElementById("panelNextAction");
+    const panelFollowUpDate = document.getElementById("panelFollowUpDate");
+    const panelFollowUpBadge = document.getElementById("panelFollowUpBadge");
+    const panelNotes = document.getElementById("panelNotes");
+    const panelPriority = document.getElementById("panelPriority");
+    const panelStatusRow = document.getElementById("panelStatusRow");
+    const panelSaveBtn = document.getElementById("panelSaveBtn");
+    const panelDeleteBtn = document.getElementById("panelDeleteBtn");
+    const panelMeta = document.getElementById("panelMeta");
+
+    const kanbanElement = document.getElementById("kanban");
+
+    // --- Init auth + data
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        window.location.href = "login.html";
+        return;
+      }
+      currentUser = data.session.user;
+      if (currentUser.email) {
+        userEmailEl.textContent = currentUser.email;
+        const initials = currentUser.email[0]?.toUpperCase() || "U";
+        userAvatarEl.textContent = initials;
+      }
+
+      // Ensure priority column exists (best-effort, will not block)
+      await ensurePriorityColumn();
+
+      await loadApplications();
+    })();
+
+    async function ensurePriorityColumn() {
+      try {
+        // Try a simple select that references priority.
+        // If column does not exist, Supabase will return an error we can detect.
+        const { error } = await supabase
+          .from("applications")
+          .select("id, priority")
+          .limit(1);
+
+        if (error && error.message && error.message.toLowerCase().includes("column") && error.message.toLowerCase().includes("priority")) {
+          console.warn("Priority column missing, attempting to create via SQL function or manual migration.");
+          // Here we only warn; you'd normally create it via SQL migration.
+          // For safety in this frontend-only context, we won't run arbitrary ALTER TABLE.
+        }
+      } catch (e) {
+        console.error("Error while checking priority column:", e);
+      }
+    }
+
+    async function loadApplications() {
+      const { data, error } = await supabase
+        .from("applications")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+      applications = (data || []).map(a => ({
+        ...a,
+        priority: a.priority ?? false
+      }));
+
+      renderBoard();
+      updateMeta();
+    }
+
+    function updateMeta() {
+      const total = applications.length;
+      const active = applications.filter(a => a.status === "To Apply" || a.status === "Applied" || a.status === "Interview").length;
+      const priorityCount = applications.filter(a => a.priority).length;
+
+      metaTotal.textContent = `Total: ${total}`;
+      metaActive.textContent = `Active: ${active}`;
+      metaPriority.textContent = `Priority: ${priorityCount}`;
+    }
+
+    function groupByStatus() {
+      const groups = {
+        "To Apply": [],
+        "Applied": [],
+        "Interview": [],
+        "Offer": [],
+        "Rejected": []
+      };
+      applications.forEach(app => {
+        const status = app.status || "To Apply";
+        if (!groups[status]) groups[status] = [];
+        groups[status].push(app);
+      });
+
+      // Sort priority first in each column
+      Object.keys(groups).forEach(status => {
+        groups[status].sort((a, b) => {
+          if (a.priority === b.priority) return 0;
+          return a.priority ? -1 : 1;
+        });
+      });
+
+      return groups;
+    }
+
+    function renderBoard() {
+      const groups = groupByStatus();
+
+      const dropzones = document.querySelectorAll(".kanban-column-dropzone");
+      dropzones.forEach(zone => {
+        const status = zone.getAttribute("data-status");
+        const cards = groups[status] || [];
+        zone.innerHTML = "";
+        cards.forEach(app => {
+          zone.appendChild(createCardElement(app));
+        });
+      });
+
+      countToApply.textContent = groups["To Apply"]?.length || 0;
+      countApplied.textContent = groups["Applied"]?.length || 0;
+      countInterview.textContent = groups["Interview"]?.length || 0;
+      countOffer.textContent = groups["Offer"]?.length || 0;
+      countRejected.textContent = groups["Rejected"]?.length || 0;
+    }
+
+    function createCardElement(app) {
+      const card = document.createElement("div");
+      card.className = "kanban-card";
+      if (app.priority) {
+        card.classList.add("priority");
+      }
+      card.setAttribute("draggable", "true");
+      card.dataset.id = app.id;
+
+      const header = document.createElement("div");
+      header.className = "kanban-card-header";
+
+      const title = document.createElement("div");
+      title.className = "kanban-card-title";
+      title.textContent = app.company || "(No company)";
+      header.appendChild(title);
+
+      const priorityBadge = document.createElement("div");
+      if (app.priority) {
+        priorityBadge.className = "priority-badge";
+        priorityBadge.textContent = "Priority";
+        header.appendChild(priorityBadge);
+      }
+
+      const role = document.createElement("div");
+      role.className = "kanban-card-role";
+      role.textContent = app.role || "";
+
+      const tags = document.createElement("div");
+      tags.className = "kanban-card-tags";
+
+      // Next action indicator
+      if (app.next_action) {
+        const chip = document.createElement("div");
+        chip.className = "tag-pill";
+
+        const dot = document.createElement("span");
+        dot.className = "tag-dot none";
+
+        const followState = getFollowUpState(app.follow_up_date);
+        if (followState === "overdue") dot.classList.add("danger");
+        else if (followState === "today") dot.classList.add("warn");
+        else if (followState === "upcoming") dot.classList.add("upcoming");
+        chip.appendChild(dot);
+
+        const text = document.createElement("span");
+        text.textContent = app.next_action.length > 20
+          ? app.next_action.slice(0, 17) + "..."
+          : app.next_action;
+        chip.appendChild(text);
+
+        tags.appendChild(chip);
+      }
+
+      // Follow-up date tag
+      if (app.follow_up_date) {
+        const chip = document.createElement("div");
+        chip.className = "tag-pill";
+
+        const dot = document.createElement("span");
+        dot.className = "tag-dot none";
+
+        const state = getFollowUpState(app.follow_up_date);
+        if (state === "overdue") dot.classList.add("danger");
+        else if (state === "today") dot.classList.add("warn");
+        else if (state === "upcoming") dot.classList.add("upcoming");
+        chip.appendChild(dot);
+
+        const d = new Date(app.follow_up_date);
+        const text = document.createElement("span");
+        text.textContent = isNaN(d) ? app.follow_up_date : d.toLocaleDateString();
+        chip.appendChild(text);
+
+        tags.appendChild(chip);
+      }
+
+      const footer = document.createElement("div");
+      footer.className = "kanban-card-footer";
+
+      const meta = document.createElement("div");
+      meta.textContent = app.location || "";
+
+      const actions = document.createElement("div");
+      actions.className = "kanban-card-actions";
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "icon-btn";
+      editBtn.innerHTML = "📝";
+      editBtn.title = "Edit";
+      editBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openPanelFor(app.id);
+      });
+
+      const starBtn = document.createElement("button");
+      starBtn.className = "icon-btn";
+      starBtn.innerHTML = app.priority ? "⭐" : "☆";
+      starBtn.title = "Toggle priority";
+      starBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        await togglePriority(app.id);
+      });
+
+      const advanceBtn = document.createElement("button");
+      advanceBtn.className = "icon-btn";
+      advanceBtn.innerHTML = "➡";
+      advanceBtn.title = "Move to next stage";
+      advanceBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        await moveToNextStage(app.id);
+      });
+
+      actions.appendChild(editBtn);
+      actions.appendChild(starBtn);
+      actions.appendChild(advanceBtn);
+
+      footer.appendChild(meta);
+      footer.appendChild(actions);
+
+      card.appendChild(header);
+      card.appendChild(role);
+      card.appendChild(tags);
+      card.appendChild(footer);
+
+      card.addEventListener("click", () => {
+        openPanelFor(app.id);
+      });
+
+      // Drag events
+      card.addEventListener("dragstart", handleDragStart);
+      card.addEventListener("dragend", handleDragEnd);
+
+      return card;
+    }
+
+    function getFollowUpState(dateString) {
+      if (!dateString) return "none";
+      const d = new Date(dateString);
+      if (isNaN(d)) return "none";
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const target = new Date(d);
+      target.setHours(0,0,0,0);
+
+      if (target.getTime() === today.getTime()) return "today";
+      if (target < today) return "overdue";
+      return "upcoming";
+    }
+
+    // --- Drag and drop logic ---
+    let draggedCard = null;
+
+    function handleDragStart(e) {
+      draggedCard = e.currentTarget;
+      draggedCard.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", draggedCard.dataset.id);
+
+      document.querySelectorAll(".kanban-column-dropzone").forEach(zone => {
+        zone.classList.add("highlight");
+      });
+    }
+
+    function handleDragEnd() {
+      if (draggedCard) {
+        draggedCard.classList.remove("dragging");
+        draggedCard = null;
+      }
+      document.querySelectorAll(".kanban-column-dropzone").forEach(zone => {
+        zone.classList.remove("highlight");
+      });
+    }
+
+    document.querySelectorAll(".kanban-column-dropzone").forEach(zone => {
+      zone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      });
+      zone.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const id = e.dataTransfer.getData("text/plain");
+        const status = zone.getAttribute("data-status");
+        await updateStatus(id, status);
+      });
+    });
+
+    async function updateStatus(id, newStatus) {
+      const appIndex = applications.findIndex(a => a.id === id);
+      if (appIndex === -1) return;
+
+      applications[appIndex].status = newStatus;
+      renderBoard();
+      updateMeta();
+
+      const { error } = await supabase
+        .from("applications")
+        .update({ status: newStatus })
+        .eq("id", id);
+
+      if (error) {
+        console.error("Error updating status:", error);
+      }
+    }
+
+    async function moveToNextStage(id) {
+      const app = applications.find(a => a.id === id);
+      if (!app) return;
+      const order = ["To Apply", "Applied", "Interview", "Offer", "Rejected"];
+      const currentIndex = order.indexOf(app.status || "To Apply");
+      if (currentIndex === -1 || currentIndex >= order.length - 1) return;
+      const nextStatus = order[currentIndex + 1];
+      await updateStatus(id, nextStatus);
+    }
+
+    async function togglePriority(id) {
+      const appIndex = applications.findIndex(a => a.id === id);
+      if (appIndex === -1) return;
+      const current = applications[appIndex].priority ?? false;
+      const newValue = !current;
+      applications[appIndex].priority = newValue;
+      renderBoard();
+      updateMeta();
+
+      const { error } = await supabase
+        .from("applications")
+        .update({ priority: newValue })
+        .eq("id", id);
+
+      if (error) {
+        console.error("Error updating priority:", error);
+      }
+
+      // If panel is open on this card, update checkbox
+      if (currentCard && currentCard.id === id) {
+        panelPriority.checked = newValue;
+      }
+    }
+
+    // --- Detail panel logic ---
+
+    panelCloseBtn.addEventListener("click", closePanel);
+
+    function openPanelFor(id) {
+      const app = applications.find(a => a.id === id);
+      if (!app) return;
+      currentCard = app;
+
+      detailPanel.classList.add("open");
+
+      panelTitle.textContent = app.company || "Application details";
+      panelSubtitle.textContent = app.role || "";
+
+      panelCompany.value = app.company || "";
+      panelRole.value = app.role || "";
+      panelAppliedDate.value = app.applied_date || "";
+      panelNextAction.value = app.next_action || "";
+      panelFollowUpDate.value = app.follow_up_date || "";
+      panelNotes.value = app.notes || "";
+      panelPriority.checked = app.priority ?? false;
+
+      updatePanelFollowBadge(app.follow_up_date);
+
+      // status pills
+      document.querySelectorAll(".panel-status-pill").forEach(pill => {
+        const status = pill.getAttribute("data-status");
+        if (status === (app.status || "To Apply")) {
+          pill.classList.add("active");
+        } else {
+          pill.classList.remove("active");
+        }
+
+        pill.onclick = () => {
+          document.querySelectorAll(".panel-status-pill").forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+        };
+      });
+
+      const createdText = app.created_at ? new Date(app.created_at).toLocaleString() : "Unknown";
+      panelMeta.textContent = `Created: ${createdText}`;
+    }
+
+    function closePanel() {
+      detailPanel.classList.remove("open");
+      currentCard = null;
+    }
+
+    panelFollowUpDate.addEventListener("change", () => {
+      updatePanelFollowBadge(panelFollowUpDate.value || null);
+    });
+
+    function updatePanelFollowBadge(dateString) {
+      const state = getFollowUpState(dateString);
+      if (state === "none") {
+        panelFollowUpBadge.textContent = "No follow-up set";
+        panelFollowUpBadge.style.background = "rgba(148,163,184,0.18)";
+        panelFollowUpBadge.style.color = "var(--muted)";
+      } else if (state === "overdue") {
+        panelFollowUpBadge.textContent = "Overdue";
+        panelFollowUpBadge.style.background = "rgba(248,113,113,0.15)";
+        panelFollowUpBadge.style.color = "#b91c1c";
+      } else if (state === "today") {
+        panelFollowUpBadge.textContent = "Due today";
+        panelFollowUpBadge.style.background = "rgba(234,179,8,0.18)";
+        panelFollowUpBadge.style.color = "#92400e";
+      } else if (state === "upcoming") {
+        panelFollowUpBadge.textContent = "Upcoming";
+        panelFollowUpBadge.style.background = "rgba(34,197,94,0.18)";
+        panelFollowUpBadge.style.color = "#166534";
+      }
+    }
+
+    panelSaveBtn.addEventListener("click", async () => {
+      if (!currentCard) return;
+
+      const newCompany = panelCompany.value.trim();
+      const newRole = panelRole.value.trim();
+      const newAppliedDate = panelAppliedDate.value || null;
+      const newNextAction = panelNextAction.value.trim() || null;
+      const newFollowUp = panelFollowUpDate.value || null;
+      const newNotes = panelNotes.value.trim() || null;
+      const newPriority = panelPriority.checked;
+
+      let newStatus = currentCard.status || "To Apply";
+      const activePill = document.querySelector(".panel-status-pill.active");
+      if (activePill) {
+        newStatus = activePill.getAttribute("data-status");
+      }
+
+      const payload = {
+        company: newCompany,
+        role: newRole,
+        applied_date: newAppliedDate,
+        next_action: newNextAction,
+        follow_up_date: newFollowUp,
+        notes: newNotes,
+        status: newStatus,
+        priority: newPriority
+      };
+
+      // Update local state
+      const idx = applications.findIndex(a => a.id === currentCard.id);
+      if (idx !== -1) {
+        applications[idx] = { ...applications[idx], ...payload };
+        currentCard = applications[idx];
+      }
+
+      renderBoard();
+      updateMeta();
+
+      const { error } = await supabase
+        .from("applications")
+        .update(payload)
+        .eq("id", currentCard.id);
+
+      if (error) {
+        console.error("Error saving panel changes:", error);
+      } else {
+        openPanelFor(currentCard.id); // refresh panel content
+      }
+    });
+
+    panelDeleteBtn.addEventListener("click", async () => {
+      if (!currentCard) return;
+      const sure = confirm("Delete this application?");
+      if (!sure) return;
+
+      const id = currentCard.id;
+      closePanel();
+
+      const { error } = await supabase
+        .from("applications")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.error("Error deleting application:", error);
+      } else {
+        applications = applications.filter(a => a.id !== id);
+        renderBoard();
+        updateMeta();
+      }
+    });
+  </script>
+</body>
+</html>
