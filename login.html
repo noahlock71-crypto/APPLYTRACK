@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ApplyTrack – Log In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --bg-muted: #e5e7eb;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --primary: #3b82f6;
+      --primary-soft: rgba(59,130,246,0.12);
+      --primary-dark: #2563eb;
+      --border: #e5e7eb;
+      --radius-lg: 16px;
+      --shadow-soft: 0 8px 24px rgba(15,23,42,0.10);
+      --transition-fast: 0.18s ease-out;
+      --danger: #ef4444;
+      --success: #22c55e;
+    }
+    [data-theme="dark"] {
+      --bg: #020617;
+      --bg-muted: #0f172a;
+      --card-bg: #0f172a;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --primary: #3b82f6;
+      --primary-soft: rgba(59,130,246,0.16);
+      --primary-dark: #60a5fa;
+      --border: #1f2937;
+      --shadow-soft: 0 18px 45px rgba(0,0,0,0.55);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: background 0.3s ease, color 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated Background */
+    body::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150%;
+      height: 150%;
+      background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+      animation: pulse 8s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+      50% { transform: translateX(-50%) scale(1.1); opacity: 0.3; }
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    /* Back to Home Link */
+    .home-link {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 14px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      transition: all 0.2s;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .home-link:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .home-link .logo-mark-small {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: radial-gradient(circle at 20% 0, #3b82f6 0, #1e40af 40%, #0f172a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.5);
+    }
+
+    /* Login Container */
+    .login-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 48px 40px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    /* Logo Section */
+    .logo-section {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo-mark-large {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 20% 0, #3b82f6 0, #1e40af 40%, #0f172a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      margin: 0 auto 16px;
+      box-shadow: 0 10px 30px rgba(37,99,235,0.6);
+    }
+
+    .logo-section h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .logo-section p {
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 15px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+      background: var(--card-bg);
+    }
+
+    input::placeholder {
+      color: var(--muted);
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #6366f1);
+      color: white;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+      margin-bottom: 12px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(37,99,235,0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 24px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .divider span {
+      padding: 0 12px;
+    }
+
+    /* Message */
+    .message {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      text-align: center;
+      display: none;
+    }
+
+    .message.error {
+      background: rgba(239,68,68,0.1);
+      color: var(--danger);
+      border: 1px solid rgba(239,68,68,0.3);
+      display: block;
+    }
+
+    .message.success {
+      background: rgba(34,197,94,0.1);
+      color: var(--success);
+      border: 1px solid rgba(34,197,94,0.3);
+      display: block;
+    }
+
+    .message.info {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border: 1px solid rgba(59,130,246,0.3);
+      display: block;
+    }
+
+    /* Footer Text */
+    .footer-text {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .footer-text a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-text a:hover {
+      text-decoration: underline;
+    }
+
+    /* Loading State */
+    .btn.loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .btn.loading::after {
+      content: "";
+      width: 16px;
+      height: 16px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .login-card {
+        padding: 36px 28px;
+      }
+      .home-link, .theme-toggle {
+        position: absolute;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="homepage.html" class="home-link">
+    <div class="logo-mark-small">AT</div>
+    <span>Home</span>
+  </a>
+
+  <button class="theme-toggle" id="themeToggle">🌙 Dark</button>
+
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo-section">
+        <div class="logo-mark-large">AT</div>
+        <h1>Welcome back</h1>
+        <p>Log in to continue to ApplyTrack</p>
+      </div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input 
+            type="email" 
+            id="email" 
+            placeholder="you@example.com" 
+            required 
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            placeholder="••••••••" 
+            required 
+            autocomplete="current-password"
+          >
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="loginBtn">
+          Log in
+        </button>
+      </form>
+
+      <div class="divider">
+        <span>or</span>
+      </div>
+
+      <button type="button" class="btn btn-secondary" id="signupBtn">
+        Create new account
+      </button>
+
+      <div class="message" id="message"></div>
+
+      <div class="footer-text">
+        By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabaseUrl = "https://xktmvjnzjeeoxsreggpg.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhrdG12am56amVlb3hzcmVnZ3BnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzOTEzMjMsImV4cCI6MjA4Mzk2NzMyM30.RHfnwflwiZ4KwDNLC_H6WpoekvHWAQeau5m8bTod2IM";
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Elements
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const signupBtn = document.getElementById("signupBtn");
+    const loginForm = document.getElementById("loginForm");
+    const message = document.getElementById("message");
+    const themeToggle = document.getElementById("themeToggle");
+
+    // Theme Toggle
+    const storedTheme = localStorage.getItem("applytrack-theme") || "dark";
+    document.documentElement.setAttribute("data-theme", storedTheme);
+    themeToggle.textContent = storedTheme === "dark" ? "🌙 Dark" : "☀️ Light";
+
+    themeToggle.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("applytrack-theme", next);
+      themeToggle.textContent = next === "dark" ? "🌙 Dark" : "☀️ Light";
+    });
+
+    // Message Helper
+    function showMessage(text, type = "info") {
+      message.textContent = text;
+      message.className = `message ${type}`;
+      message.style.display = "block";
+    }
+
+    function hideMessage() {
+      message.style.display = "none";
+    }
+
+    // Login Handler
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideMessage();
+      
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        showMessage("Please enter both email and password.", "error");
+        return;
+      }
+
+      loginBtn.classList.add("loading");
+      loginBtn.textContent = "";
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      loginBtn.classList.remove("loading");
+      loginBtn.textContent = "Log in";
+
+      if (error) {
+        showMessage(error.message, "error");
+      } else {
+        showMessage("Success! Redirecting...", "success");
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 500);
+      }
+    });
+
+    // Signup Handler
+    signupBtn.addEventListener("click", async () => {
+      hideMessage();
+      
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        showMessage("Please enter both email and password to sign up.", "error");
+        return;
+      }
+
+      if (password.length < 6) {
+        showMessage("Password must be at least 6 characters long.", "error");
+        return;
+      }
+
+      signupBtn.classList.add("loading");
+      signupBtn.textContent = "";
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password
+      });
+
+      signupBtn.classList.remove("loading");
+      signupBtn.textContent = "Create new account";
+
+      if (error) {
+        showMessage(error.message, "error");
+      } else {
+        showMessage("Account created! Check your email for confirmation.", "success");
+        emailInput.value = "";
+        passwordInput.value = "";
+      }
+    });
+
+    // Check if already logged in
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        window.location.href = "dashboard.html";
+      }
+    })();
+
+    // Enter key support for signup
+    passwordInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter" && e.shiftKey) {
+        e.preventDefault();
+        signupBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>
